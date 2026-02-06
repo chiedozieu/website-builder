@@ -11,11 +11,11 @@ export const protect = async (
     const session = await auth.api.getSession({
       headers: fromNodeHeaders(req.headers),
     });
-    if (!session || !session.user) {
+    if (!session || !session?.user) {
       return res.status(401).json({ message: "Unauthorized User" });
     }
     req.userId = session?.user.id;
-    
+
     next();
   } catch (error: any) {
     console.log(error, "auth middleware error");
