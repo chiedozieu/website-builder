@@ -40,7 +40,7 @@ export const createUserProject = async (req: Request, res: Response) => {
     const project = await prisma.websiteProject.create({
       data: {
         name:
-          initial_prompt > 50
+          initial_prompt.length > 50
             ? initial_prompt.slice(0, 47) + "..."
             : initial_prompt,
         initial_prompt,
@@ -191,7 +191,6 @@ Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3
 };
 
 // get a single user project controller
-
 export const getUserProject = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
@@ -228,7 +227,7 @@ export const getUserProjects = async (req: Request, res: Response) => {
 
     const projects = await prisma.websiteProject.findMany({
       where: { userId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { updatedAt: "desc" },
     });
 
     res.json({ projects });
