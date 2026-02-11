@@ -8,6 +8,8 @@ import {
 import type { Message, Project, Version } from "../types";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import api from "@/configs/axios";
 
 interface SidebarProps {
   isMenuOpen: boolean;
@@ -26,14 +28,60 @@ const Sidebar = ({
   const messageRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
 
-  const handleRollBack = async (versionId: string) => {};
+  const handleRollBack = async (versionId: string) => {
+    try {
+      const confirm = window.confirm(
+        "Rolling back to a previous version will discard all changes made after that version. Are you sure you want to proceed?",
+      );
+      if (!confirm) return;
+      setIsGenerating(true);
+      const { data } = await api.get(
+        `/api/project/rollback/${project.id}/${versionId}`,
+      );
+      const { data: data2 } = await api.get(`/api/user/project/${project.id}`);
+      toast.success(data.message);
+      setProject(data2.project);
+      setIsGenerating(false);
+    } catch (error: any) {
+      setIsGenerating(false);
+      toast.error(error?.response?.data?.message || error.message);
+      console.log(error);
+    }
+  };
+
+  const fetchProject = async () => {
+    try {
+      const { data } = await api.get(`/api/user/project/${project.id}`);
+      setProject(data.project);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message);
+      console.log(error);
+    }
+  };
 
   const handleRevisions = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsGenerating(true);
-    setTimeout(() => {
+    let interval: number | undefined;
+    try {
+      setIsGenerating(true);
+      interval = setInterval(() => {
+        fetchProject();
+      }, 10000);
+
+      const { data } = await api.post(`/api/project/revision/${project.id}`, {
+        message: input,
+      });
+      fetchProject();
+      toast.success(data.message);
+      setInput("");
+      clearInterval(interval);
       setIsGenerating(false);
-    }, 3000);
+    } catch (error: any) {
+      setIsGenerating(false);
+      toast.error(error?.response?.data?.message || error.message);
+      console.log(error);
+      clearInterval(interval);
+    }
   };
 
   useEffect(() => {
@@ -81,7 +129,7 @@ const Sidebar = ({
                           : "bg-gray-700 text-gray-100 rounded-tl-none"
                       }`}
                     >
-                    {msg.content}
+                      {msg.content}
                     </div>
                     {isUser && (
                       <div className="size-8 rounded-full bg-gray-700 flex items-center justify-center">
@@ -140,7 +188,7 @@ const Sidebar = ({
                   style={{ animationDelay: "0s" }}
                 />
                 <span
-                  className="w-1.5 h-1.5 rounded-full animate-bounce bg-gray-600"
+                  className="w-2 h-2 rounded-full animate-bounce bg-gray-600"
                   style={{ animationDelay: "0.2s" }}
                 />
                 <span

@@ -20,8 +20,8 @@ projectRouter.get(
   rollbackToVersion,
 );
 projectRouter.delete("/:projectId", protect, deleteProject);
-projectRouter.get("preview/:projectId", protect, getProjectPreview);
-projectRouter.get("published", getPublishedProjects);
-projectRouter.get("published/:projectId", getProjectById);
+projectRouter.get("/preview/:projectId", protect, getProjectPreview);
+projectRouter.get("/published", getPublishedProjects);
+projectRouter.get("/published/:projectId", getProjectById);
 
 export default projectRouter;

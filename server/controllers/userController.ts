@@ -70,7 +70,9 @@ export const createUserProject = async (req: Request, res: Response) => {
 
     // enhance user prompt
     const promptEnhanceResponse = await openai.chat.completions.create({
-      model: "z-ai/glm-4.5-air:free",
+      // model: "nvidia/nemotron-3-nano-30b-a3b:free",
+      // model: "z-ai/glm-4.5-air:free",
+      model: 'openai/gpt-oss-120b',
       messages: [
         {
           role: "system",
@@ -113,7 +115,9 @@ Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3
 
     // generate website code
     const codeGenerationResponse = await openai.chat.completions.create({
-      model: "z-ai/glm-4.5-air:free",
+      // model: "nvidia/nemotron-3-nano-30b-a3b:free",
+      // model: "z-ai/glm-4.5-air:free",
+      model: 'openai/gpt-oss-120b',
       messages: [
         {
           role: "system",
@@ -149,6 +153,24 @@ Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3
       ],
     });
     const code = codeGenerationResponse.choices[0].message.content || "";
+
+    if (!code || code.trim().length === 0) {
+       await prisma.conversation.create({
+      data: {
+        role: "assistant",
+        content:
+          "Unable to generate code. Please try again!.",
+        projectId: project.id,
+      },
+    });
+
+     await prisma.user.update({
+      where: { id: userId },
+      data: { credits: { increment: 5 } },
+    });
+    return;
+    }
+
 
     // create Version for the project
     const version = await prisma.version.create({

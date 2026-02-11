@@ -13,7 +13,7 @@ const steps = [
   { icon: CircleIcon, label: "Finalizing your website..." },
 ];
 
-const STEP_DURATION = 45000;
+const STEP_DURATION = 60000;
 const LoaderSteps = () => {
   const [current, setCurrent] = useState(0);
 
@@ -41,7 +41,7 @@ const Icon = steps[current].icon
         {steps[current].label}
       </p>
       <p className="text-xs text-gray-400 mt-2 transition-opacity duration-700 opacity-100">
-        This may take around 2-3 minutes
+        This may take around 2-10 minutes
       </p>
     </div>
   );

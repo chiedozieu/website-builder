@@ -16,17 +16,16 @@ const Home = () => {
     try {
       if (!session?.user) {
         return toast.error("Please sign in to create a project.");
-      } else {
-        if (!input.trim()) {
-          return toast.error("Please enter a message");
-        }
+      } else if (!input.trim()) {
+        return toast.error("Please enter a message");
       }
+
       setLoading(true);
       const { data } = await api.post("/api/user/project", {
         initial_prompt: input,
       });
       setLoading(false);
-      navigate(`/project/${data.projectId}`);
+      navigate(`/projects/${data.projectId}`);
     } catch (error: any) {
       setLoading(false);
       toast.error(error?.response?.data?.message || error.message);
