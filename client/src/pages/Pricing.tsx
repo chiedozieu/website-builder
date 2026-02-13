@@ -1,6 +1,9 @@
 import React from "react";
 import { appPlans } from "../assets/site-builder-assets/assets/assets";
 import Footer from "../components/Footer";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import api from "@/configs/axios";
 
 
 interface Plan {
@@ -13,11 +16,21 @@ interface Plan {
 }
 
 const Pricing = () => {
+    const { data: session } = authClient.useSession();
   const [plans] = React.useState<Plan[]>(appPlans)
 
 
    const handlePurchase = async (planId: string) => {
-        
+        try {
+            if(!session?.user) {
+                return toast.error("Please sign in to purchase a plan.");
+            }
+            const { data } = await api.post("/api/user/purchase-credits", { planId });
+            window.location.href = data.payment_link; // Redirect to Stripe Checkout
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || error.message); 
+            console.error("Purchase error:", error);
+        }
     }
   
   return (

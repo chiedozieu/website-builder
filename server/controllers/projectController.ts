@@ -48,10 +48,10 @@ export const makeRevision = async (req: Request, res: Response) => {
 
     //enhance user prompt
     const promptEnhanceResponse = await openai.chat.completions.create({
+      model: "openrouter/free",
       // model: "nvidia/nemotron-3-nano-30b-a3b:free",
       // model: "z-ai/glm-4.5-air:free",
       // model: 'openai/gpt-oss-120b',
-      model: "openrouter/free",
 
       messages: [
         {
@@ -95,9 +95,9 @@ Return ONLY the enhanced request, nothing else. Keep it concise (1-2 sentences).
     // generate code
     const codeGenerationResponse = await openai.chat.completions.create({
       // model: "nvidia/nemotron-3-nano-30b-a3b:free",
-      // model: "z-ai/glm-4.5-air:free",
+      model: "z-ai/glm-4.5-air:free",
       // model: 'openai/gpt-oss-120b',
-      model: "openrouter/free",
+      // model: "openrouter/free",
 
       messages: [
         {
