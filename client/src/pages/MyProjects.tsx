@@ -2,28 +2,51 @@ import { useEffect, useState } from "react";
 import type { Project } from "../types";
 import { Loader2Icon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { dummyProjects } from "../assets/site-builder-assets/assets/assets";
 import Footer from "../components/Footer";
+import api from "@/configs/axios";
+import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
 const MyProjects = () => {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
+  const { data: session, isPending } = authClient.useSession();
   const fetchProjects = async () => {
-    setProjects(dummyProjects);
-    // Simulate loading
-    setTimeout(() => {
+    try {
+      const { data } = await api.get("/api/user/projects");
+      setProjects(data.projects);
       setLoading(false);
-    }, 1000);
+    } catch (error: any) {
+      setLoading(false);
+      toast.error(error?.response?.data?.message || error.message);
+      console.log(error);
+    }
   };
 
   const deleteProject = async (projectId: string) => {
-    
+    try {
+      const confirm = window.confirm(
+        "Are you sure you want to delete this project? This action cannot be undone.",
+      );
+      if (!confirm) return;
+      const { data } = await api.delete(`/api/project/${projectId}`);
+      toast.success(data.message);
+      fetchProjects();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message);
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (session?.user && !isPending) {
+      fetchProjects();
+    } else if (!session?.user && !isPending) {
+      navigate("/");
+      toast.error("Please sign in to view your projects.");
+    }
+  }, [session?.user]);
   return (
     <>
       <div className="px-4 md:px-16 lg:px-24 xl:px-32">
@@ -101,7 +124,10 @@ const MyProjects = () => {
                     </div>
                   </div>
                   <div onClick={(e) => e.stopPropagation()} className="">
-                    <Trash2Icon onClick={() => deleteProject(project.id)} className="absolute top-3 right-3 scale-0 group-hover:scale-100 bg-white p-1.5 size-7 text-red-500 rounded-full text-xl cursor-pointer transition-all border border-amber-500" />
+                    <Trash2Icon
+                      onClick={() => deleteProject(project.id)}
+                      className="absolute top-3 right-3 scale-0 group-hover:scale-100 bg-white p-1.5 size-7 text-red-500 rounded-full text-xl cursor-pointer transition-all border border-amber-500"
+                    />
                   </div>
                 </div>
               ))}

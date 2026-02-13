@@ -72,7 +72,9 @@ export const createUserProject = async (req: Request, res: Response) => {
     const promptEnhanceResponse = await openai.chat.completions.create({
       // model: "nvidia/nemotron-3-nano-30b-a3b:free",
       // model: "z-ai/glm-4.5-air:free",
-      model: 'openai/gpt-oss-120b',
+      // model: 'openai/gpt-oss-120b',
+      model: "openrouter/free",
+
       messages: [
         {
           role: "system",
@@ -117,7 +119,9 @@ Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3
     const codeGenerationResponse = await openai.chat.completions.create({
       // model: "nvidia/nemotron-3-nano-30b-a3b:free",
       // model: "z-ai/glm-4.5-air:free",
-      model: 'openai/gpt-oss-120b',
+      // model: 'openai/gpt-oss-120b',
+      model: "openrouter/free",
+
       messages: [
         {
           role: "system",
@@ -155,22 +159,20 @@ Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3
     const code = codeGenerationResponse.choices[0].message.content || "";
 
     if (!code || code.trim().length === 0) {
-       await prisma.conversation.create({
-      data: {
-        role: "assistant",
-        content:
-          "Unable to generate code. Please try again!.",
-        projectId: project.id,
-      },
-    });
+      await prisma.conversation.create({
+        data: {
+          role: "assistant",
+          content: "Unable to generate code. Please try again!.",
+          projectId: project.id,
+        },
+      });
 
-     await prisma.user.update({
-      where: { id: userId },
-      data: { credits: { increment: 5 } },
-    });
-    return;
+      await prisma.user.update({
+        where: { id: userId },
+        data: { credits: { increment: 5 } },
+      });
+      return;
     }
-
 
     // create Version for the project
     const version = await prisma.version.create({
@@ -238,7 +240,6 @@ export const getUserProject = async (req: Request, res: Response) => {
   }
 };
 
-
 // get all users projects controller
 export const getUserProjects = async (req: Request, res: Response) => {
   try {
@@ -267,7 +268,7 @@ export const togglePublish = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const {projectId} = req.params;
+    const { projectId } = req.params;
     const project = await prisma.websiteProject.findUnique({
       where: { id: projectId, userId },
     });
@@ -281,7 +282,11 @@ export const togglePublish = async (req: Request, res: Response) => {
       data: { isPublished: !project.isPublished },
     });
 
-    res.json({message: project.isPublished ? "Project unpublished" : "Project published"});
+    res.json({
+      message: project.isPublished
+        ? "Project unpublished"
+        : "Project published",
+    });
   } catch (error: any) {
     console.log(error.message, "togglePublish error");
     return res.status(500).json({ message: error.message });
@@ -291,7 +296,6 @@ export const togglePublish = async (req: Request, res: Response) => {
 // purchase credits controller
 export const purchaseCredits = async (req: Request, res: Response) => {
   try {
-   
   } catch (error: any) {
     console.log(error.message, "purchaseCredits error");
     return res.status(500).json({ message: error.message });
