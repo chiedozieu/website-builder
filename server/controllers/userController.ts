@@ -309,7 +309,7 @@ export const purchaseCredits = async (req: Request, res: Response) => {
     const userId = req.userId;
  
     const { planId } = req.body as { planId: keyof typeof plans };
-    const origin = req.headers.origin as string;
+    const origin = req.headers.origin as string || undefined;
 
 
     const plan: Plan = plans[planId];
@@ -326,7 +326,7 @@ export const purchaseCredits = async (req: Request, res: Response) => {
         credits: plan.credits,
       },
     });
-
+// console.log("This is your plan:", plan)
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
     
 
@@ -338,7 +338,7 @@ export const purchaseCredits = async (req: Request, res: Response) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: `AiSiteBuilder ${plan.credits} credits`,
+              name: `AiSiteBuilder - ${plan.credits} credits`,
             },
             unit_amount: Math.floor(transaction.amount * 100),
           },
